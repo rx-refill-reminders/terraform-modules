@@ -1,0 +1,94 @@
+name: on-push
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      ALL:
+        type: boolean
+        required: true
+        description: 'Bump all modules?'
+
+permissions:
+  contents: write
+  pull-requests: read
+  id-token: write
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.modules.outputs.modules }}
+    steps:
+      -
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      -
+        uses: dorny/paths-filter@v4
+        id: paths-filter
+        if: ${{ inputs.ALL != true }}
+        with:
+          list-files: json
+          filters: |
+            modules:
+              - 'modules/**'
+      -
+        name: List all module files for bump
+        id: list-all
+        if: ${{ inputs.ALL == true }}
+        run: |
+          MODULES_FILES=$(find modules -mindepth 2 -type f \
+            | jq -rcsR 'split("\n") | map(select(. != ""))')
+
+          echo "modules-files=$MODULES_FILES" | tee -a "$GITHUB_OUTPUT"
+      -
+        name: Output modules
+        id: modules
+        env:
+          MODULES_FILES: ${{ steps.list-all.outputs.modules-files || steps.paths-filter.outputs.modules_files }}
+        run: |
+          echo "::group::modules/**"
+
+          MODULES_FILES_LINES=$(printf '%s' "$MODULES_FILES" | jq -rc '.[]')
+          if [[ -z "$MODULES_FILES_LINES" ]]; then
+            echo "No modules changed"
+            MODULES_JSON='[]'
+          else
+            MODULE_NAMES=$(printf '%s' "$MODULES_FILES_LINES" \
+              | sed -nE 's,modules/([^/]+)/.*,\1,p' \
+              | sort -u)
+
+            printf '%s' "$MODULE_NAMES" \
+              | jq -rcRs 'split("\n") | map(select(. != ""))'
+
+            MODULES_JSON=$(printf '%s' "$MODULE_NAMES" \
+              | jq -rcRs 'split("\n") | map(select(. != ""))')
+          fi
+
+          echo "::endgroup::"
+
+          echo "modules=$MODULES_JSON" | tee -a "$GITHUB_OUTPUT"
+
+  tag-and-push:
+    needs: detect-changes
+    if: ${{ !(needs.detect-changes.outputs.modules == '' || needs.detect-changes.outputs.modules == '[]') }}
+    uses: rx-refill-reminders/pipeline/.github/workflows/tag-and-push.yml@tag-and-push/v0
+    with:
+      NAMESPACES: ${{ needs.detect-changes.outputs.modules }}
+      SEMVER_PREFIX: v
+      FLOATING_TAGS: true
+    secrets:
+      APP_CLIENT_ID: ${{ secrets.WRITER_APP_CLIENT_ID }}
+      APP_PRIVATE_KEY: ${{ secrets.WRITER_APP_PRIVATE_KEY }}

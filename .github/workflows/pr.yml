@@ -1,0 +1,164 @@
+name: pr
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      modules-changed: ${{ steps.paths-filter.outputs.modules == 'true' }}
+    steps:
+      -
+        uses: actions/checkout@v6
+      -
+        uses: dorny/paths-filter@v4
+        id: paths-filter
+        with:
+          filters: |
+            modules:
+              - 'modules/**'
+
+  lint:
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.modules-changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/checkout@v6
+      -
+        name: Install Terraform
+        uses: rx-refill-reminders/pipeline/.github/actions/tg-install@tg-install/v0
+        with:
+          terraform-version: ${{ vars.TERRAFORM_VERSION }}
+      -
+        name: Check if app credentials set
+        id: check-app-secrets
+        env:
+          GH_APP_CLIENT_ID: ${{ secrets.WRITER_APP_CLIENT_ID }}
+          GH_APP_PRIVATE_KEY: ${{ secrets.WRITER_APP_PRIVATE_KEY }}
+        run: |
+          if [[ -z "$GH_APP_CLIENT_ID" ]]; then
+            echo "No gh-app-client-id provided"
+            echo "set=false" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ -z "$GH_APP_PRIVATE_KEY" ]]; then
+            echo "No gh-app-private-key provided"
+            echo "set=false" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "set=true" | tee -a "$GITHUB_OUTPUT"
+      -
+        name: Fetch app token
+        id: fetch-app-token
+        if: steps.check-app-secrets.outputs.set == 'true'
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.WRITER_APP_CLIENT_ID }}
+          private-key: ${{ secrets.WRITER_APP_PRIVATE_KEY }}
+      -
+        name: Format Terraform files
+        working-directory: modules
+        run: terraform fmt -recursive
+      -
+        name: List all module directories
+        id: module-paths
+        env:
+          MODULES_DIR: modules
+        run: |
+          MODULE_DIRS_JSON=$(find "$MODULES_DIR" -type f -name '*.tf' \
+            | xargs -n1 dirname \
+            | sort -u \
+            | jq -Rsrc 'split("\n") | map(select(. != ""))')
+
+          echo "paths-json=$MODULE_DIRS_JSON" | tee -a "$GITHUB_OUTPUT"
+      -
+        name: Ensure all modules have README.md files
+        uses: actions/github-script@v7
+        env:
+          MODULE_PATHS_JSON: ${{ steps.module-paths.outputs.paths-json }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const modulePaths = JSON.parse(process.env.MODULE_PATHS_JSON);
+            const tfdocsMarker = '<!-- BEGIN_TF_DOCS -->\n<!-- END_TF_DOCS -->';
+
+            for (const modulePath of modulePaths) {
+              const readmePath = path.join(modulePath, 'README.md');
+
+              if (!fs.existsSync(readmePath)) {
+                const basename = path.basename(modulePath);
+                const content = `# ${basename}\n\n${tfdocsMarker}\n`;
+
+                fs.writeFileSync(readmePath, content, 'utf8');
+                console.log(`Created ${readmePath}`);
+              }
+            }
+      -
+        name: Generate docs for Terraform modules
+        uses: terraform-docs/gh-actions@v1.4.1
+        with:
+          recursive: true
+          working-dir: modules
+          recursive-path: .
+      -
+        name: Detect changes
+        id: detect-changes
+        run: |
+          git status -s
+
+          if [ -n "$(git status -s)" ]; then
+            echo "detected=true" | tee -a "$GITHUB_OUTPUT"
+          else
+            echo "detected=false" | tee -a "$GITHUB_OUTPUT"
+          fi
+      -
+        name: Commit changes if detected
+        if: steps.detect-changes.outputs.detected == 'true'
+        uses: planetscale/ghcommit-action@v0.2.20
+        env:
+          GITHUB_TOKEN: ${{ steps.fetch-app-token.outputs.token || github.token }}
+        with:
+          commit_message: "Terraform auto-generate"
+          repo: ${{ github.repository }}
+          branch: ${{ github.head_ref || github.ref_name }}
+      -
+        name: Fail if changes
+        if: steps.detect-changes.outputs.detected == 'true'
+        run: |
+          echo "::error::Terraform fmt/docs produced changes — commit or re-run after auto-commit"
+          exit 1
+
+  pr-ready:
+    if: ${{ always() }}
+    needs:
+      - detect-changes
+      - lint
+    runs-on: ubuntu-latest
+    steps:
+      -
+        uses: actions/checkout@v6
+      -
+        name: Emit PR ready check
+        uses: rx-refill-reminders/pipeline/.github/actions/pr-ready@pr-ready/v0
+        with:
+          needs: ${{ toJSON(needs) }}
