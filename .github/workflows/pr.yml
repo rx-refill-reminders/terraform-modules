@@ -4,7 +4,7 @@ on:
   pull_request:
 
 permissions:
-  contents: write
+  contents: read
   id-token: write
   pull-requests: write
 
@@ -18,53 +18,6 @@ concurrency:
 
 jobs:
 
-  detect-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      modules-changed: ${{ steps.paths-filter.outputs.modules == 'true' }}
-    steps:
-      -
-        uses: actions/checkout@v6
-      -
-        uses: dorny/paths-filter@v4
-        id: paths-filter
-        with:
-          filters: |
-            modules:
-              - 'modules/**'
-
-  lint:
-    needs: detect-changes
-    if: ${{ needs.detect-changes.outputs.modules-changed == 'true' }}
-    runs-on: ubuntu-latest
-    steps:
-      -
-        uses: actions/checkout@v6
-      -
-        name: Install Terraform & Terragrunt
-        uses: rx-refill-reminders/pipeline/.github/actions/tg-install@tg-install/v0
-        with:
-          terraform-version: ${{ vars.TERRAFORM_VERSION }}
-          terragrunt-version: ${{ vars.TERRAGRUNT_VERSION }}
-      -
-        name: Lint Terraform modules
-        uses: rx-refill-reminders/pipeline/.github/actions/tg-lint@tg-lint/v0
-        with:
-          tf-modules-dir: modules
-          gh-app-client-id: ${{ secrets.WRITER_APP_CLIENT_ID }}
-          gh-app-private-key: ${{ secrets.WRITER_APP_PRIVATE_KEY }}
-
-  pr-ready:
-    if: ${{ always() }}
-    needs:
-      - detect-changes
-      - lint
-    runs-on: ubuntu-latest
-    steps:
-      -
-        uses: actions/checkout@v6
-      -
-        name: Emit PR ready check
-        uses: rx-refill-reminders/pipeline/.github/actions/pr-ready@pr-ready/v0
-        with:
-          needs: ${{ toJSON(needs) }}
+  pr:
+    uses: rx-refill-reminders/pipeline/.github/workflows/pr.yml@pr/v0
+    secrets: inherit
