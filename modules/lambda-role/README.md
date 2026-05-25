@@ -32,7 +32,6 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_role_name_prefix"></a> [role\_name\_prefix](#input\_role\_name\_prefix) | Prefix for the IAM role name (account ID is appended) | `string` | n/a | yes |
-| <a name="input_user_files_bucket_arn"></a> [user\_files\_bucket\_arn](#input\_user\_files\_bucket\_arn) | ARN of the user-files S3 bucket (enables PutObject, GetObject, DeleteObject) | `string` | `null` | no |
 
 ## Outputs
 
