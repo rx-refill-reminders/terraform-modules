@@ -1,6 +1,7 @@
 # Shared S3 bucket for Lambda deployment packages, namespaced per account and region.
 resource "aws_s3_bucket" "bucket" {
-  bucket = local.bucket_name
+  bucket_prefix    = local.bucket_name
+  bucket_namespace = "account-regional"
 }
 
 # Encrypts all objects at rest with SSE-S3 (AES256).
