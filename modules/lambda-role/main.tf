@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 
 # IAM role Lambda assumes at runtime to access AWS services on behalf of the function.
 resource "aws_iam_role" "role" {
-  name = "${var.role_name}"
+  name = var.role_name
 
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
