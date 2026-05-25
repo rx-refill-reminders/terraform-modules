@@ -93,21 +93,4 @@ data "aws_iam_policy_document" "lambda_policy" {
     effect    = "Allow"
     resources = ["*"]
   }
-
-  dynamic "statement" {
-    for_each = var.user_files_bucket_arn != null ? [1] : []
-
-    content {
-      sid = "AllowUserFilesS3"
-
-      actions = [
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject",
-      ]
-
-      effect    = "Allow"
-      resources = ["${var.user_files_bucket_arn}/*"]
-    }
-  }
 }
