@@ -2,7 +2,7 @@ data "aws_caller_identity" "current" {}
 
 # IAM role Lambda assumes at runtime to access AWS services on behalf of the function.
 resource "aws_iam_role" "role" {
-  name = "${var.role_name_prefix}-${data.aws_caller_identity.current.account_id}"
+  name = "${var.role_name}"
 
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
 
 # Inline policy granting CloudWatch Logs, Secrets Manager, SSM, Step Functions, DynamoDB, and optional user-files S3 access.
 resource "aws_iam_role_policy" "policy" {
-  name = "${var.role_name_prefix}-policy-${data.aws_caller_identity.current.account_id}"
+  name = "${var.role_name}-policy"
   role = aws_iam_role.role.id
 
   policy = data.aws_iam_policy_document.lambda_policy.json
