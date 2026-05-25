@@ -3,6 +3,7 @@ locals {
   zip_file_path = "${var.dist_path}/${var.function_name}.zip"
 }
 
+# Uploads the built deployment zip to the shared code bucket so Lambda can load it from S3.
 resource "aws_s3_object" "code_object" {
   bucket = var.code_bucket_id
 
@@ -12,6 +13,7 @@ resource "aws_s3_object" "code_object" {
   source_hash = filebase64sha256(local.zip_file_path)
 }
 
+# Lambda function configured to run the uploaded zip using the provided handler, runtime, role, and environment.
 resource "aws_lambda_function" "function" {
   function_name = var.function_name
 
@@ -31,6 +33,7 @@ resource "aws_lambda_function" "function" {
   }
 }
 
+# Log group for function stdout/stderr with a fixed retention period.
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   name = "/aws/lambda/${aws_lambda_function.function.function_name}"
 

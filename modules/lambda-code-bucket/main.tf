@@ -1,7 +1,9 @@
+# Shared S3 bucket for Lambda deployment packages, namespaced per account and region.
 resource "aws_s3_bucket" "bucket" {
   bucket = local.bucket_name
 }
 
+# Encrypts all objects at rest with SSE-S3 (AES256).
 resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   bucket = aws_s3_bucket.bucket.id
 
@@ -12,6 +14,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
   }
 }
 
+# Enables object versions so Lambda deployments can reference a specific S3 object version.
 resource "aws_s3_bucket_versioning" "bucket_versioning" {
   bucket = aws_s3_bucket.bucket.id
 
@@ -20,6 +23,7 @@ resource "aws_s3_bucket_versioning" "bucket_versioning" {
   }
 }
 
+# Prefers bucket-owner object ownership, required before applying a private bucket ACL.
 resource "aws_s3_bucket_ownership_controls" "ownership_controls" {
   bucket = aws_s3_bucket.bucket.id
 
@@ -28,6 +32,7 @@ resource "aws_s3_bucket_ownership_controls" "ownership_controls" {
   }
 }
 
+# Blocks public ACLs, policies, and cross-account public access on the code bucket.
 resource "aws_s3_bucket_public_access_block" "block" {
   bucket = aws_s3_bucket.bucket.id
 
@@ -37,6 +42,7 @@ resource "aws_s3_bucket_public_access_block" "block" {
   restrict_public_buckets = true
 }
 
+# Sets the bucket ACL to private after ownership and public-access safeguards are in place.
 resource "aws_s3_bucket_acl" "bucket_acl" {
   depends_on = [
     aws_s3_bucket_ownership_controls.ownership_controls,
