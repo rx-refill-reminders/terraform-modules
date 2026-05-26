@@ -28,8 +28,8 @@ variable "code_bucket_id" {
   type        = string
 }
 
-variable "dist_path" {
-  description = "Directory containing {function_name}.zip deployment artifacts"
+variable "executable_zip" {
+  description = "The ZIP file containing the executable"
   type        = string
 }
 
