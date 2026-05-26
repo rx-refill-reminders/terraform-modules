@@ -1,6 +1,6 @@
 # Shared S3 bucket for Lambda deployment packages, namespaced per account and region.
 resource "aws_s3_bucket" "bucket" {
-  bucket_prefix    = local.bucket_name
+  bucket_prefix    = var.bucket_name_prefix
   bucket_namespace = "account-regional"
 }
 
