@@ -1,15 +1,11 @@
-locals {
-  executable_hash = filebase64sha256(var.executable_zip)
-}
-
 # Uploads the built deployment zip to the shared code bucket so Lambda can load it from S3.
 resource "aws_s3_object" "code_object" {
   bucket = var.code_bucket_id
 
-  key    = "${local.executable_hash}.zip"
+  key    = "${var.function_name}.zip"
   source = var.executable_zip
 
-  source_hash = local.executable_hash
+  source_hash = filebase64sha256(var.executable_zip)
 }
 
 # Lambda function configured to run the uploaded zip using the provided handler, runtime, role, and environment.
