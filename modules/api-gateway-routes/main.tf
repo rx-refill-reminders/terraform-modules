@@ -16,7 +16,7 @@ data "aws_apigatewayv2_api" "gateway" {
 # Lookup each handler function
 data "aws_lambda_function" "handler_function" {
   for_each      = local.handler_function_names_map
-  function_name = each.name
+  function_name = each.value
 }
 
 resource "aws_lambda_permission" "handler_permission" {
