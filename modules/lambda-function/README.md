@@ -30,8 +30,8 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_code_bucket_id"></a> [code\_bucket\_id](#input\_code\_bucket\_id) | The ID of the S3 bucket in which this Lambda's code should be saved | `string` | n/a | yes |
-| <a name="input_dist_path"></a> [dist\_path](#input\_dist\_path) | Directory containing {function\_name}.zip deployment artifacts | `string` | n/a | yes |
 | <a name="input_env_vars"></a> [env\_vars](#input\_env\_vars) | Environment variables to assign to the Lambda function | `map(string)` | `{}` | no |
+| <a name="input_executable_zip"></a> [executable\_zip](#input\_executable\_zip) | The ZIP file containing the executable | `string` | n/a | yes |
 | <a name="input_function_name"></a> [function\_name](#input\_function\_name) | Lambda function name | `string` | n/a | yes |
 | <a name="input_handler"></a> [handler](#input\_handler) | The handler entrypoint for the Lambda function | `string` | n/a | yes |
 | <a name="input_role_arn"></a> [role\_arn](#input\_role\_arn) | n/a | `string` | n/a | yes |

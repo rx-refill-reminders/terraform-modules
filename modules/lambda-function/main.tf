@@ -1,16 +1,15 @@
-# For Go functions, the zip file is pre-built by the build script
 locals {
-  zip_file_path = "${var.dist_path}/${var.function_name}.zip"
+  executable_hash = filebase64sha256(var.executable_zip)
 }
 
 # Uploads the built deployment zip to the shared code bucket so Lambda can load it from S3.
 resource "aws_s3_object" "code_object" {
   bucket = var.code_bucket_id
 
-  key    = "${var.function_name}.zip"
-  source = local.zip_file_path
+  key    = "${local.executable_hash}.zip"
+  source = var.executable_zip
 
-  source_hash = filebase64sha256(local.zip_file_path)
+  source_hash = local.executable_hash
 }
 
 # Lambda function configured to run the uploaded zip using the provided handler, runtime, role, and environment.
