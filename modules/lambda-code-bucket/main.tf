@@ -1,6 +1,10 @@
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
 # Shared S3 bucket for Lambda deployment packages, namespaced per account and region.
 resource "aws_s3_bucket" "bucket" {
-  bucket_prefix    = var.bucket_name_prefix
+  bucket           = "${var.bucket_name_prefix}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
   bucket_namespace = "account-regional"
 }
 
