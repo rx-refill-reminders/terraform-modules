@@ -16,7 +16,7 @@ data "aws_apigatewayv2_api" "gateway" {
 # Lookup each handler function
 data "aws_lambda_function" "handler_function" {
   for_each      = local.handler_function_names_map
-  function_name = each.name
+  function_name = each.value
 }
 
 resource "aws_lambda_permission" "handler_permission" {
@@ -44,7 +44,7 @@ resource "aws_apigatewayv2_route" "route" {
   api_id = var.api_id
 
   route_key = each.key
-  target    = "integrations/${aws_apigatewayv2_integration.lambda[each.key].id}"
+  target    = "integrations/${aws_apigatewayv2_integration.integration[each.key].id}"
 
   authorizer_id        = each.value.authorization != null ? each.value.authorization.authorizer_id : null
   authorization_type   = each.value.authorization != null ? each.value.authorization.authorizer_type : null
