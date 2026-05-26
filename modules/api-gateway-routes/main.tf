@@ -1,6 +1,6 @@
 locals {
   handler_function_names     = toset(var.endpoints[*].handler_function_name)
-  handler_function_names_map = tomap({ for name in local.local.handler_function_names : name => name })
+  handler_function_names_map = tomap({ for name in local.handler_function_names : name => name })
 
   endpoints_by_route_key = {
     for endpoint in var.endpoints :
