@@ -1,7 +1,7 @@
 # CloudFront Distribution
 resource "aws_cloudfront_distribution" "distribution" {
-  comment             = "CloudFront distribution for ${var.bucket_name}"
-  
+  comment = "CloudFront distribution for ${var.bucket_name}"
+
   enabled             = true
   is_ipv6_enabled     = var.enable_ipv6
   default_root_object = var.index_document

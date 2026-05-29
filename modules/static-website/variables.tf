@@ -1,6 +1,6 @@
 variable "custom_domain" {
   description = "List of DNS aliases for the website"
-  default = []
+  default     = []
   type = list(object({
     route53_zone_id  = string
     route53_hostname = string
