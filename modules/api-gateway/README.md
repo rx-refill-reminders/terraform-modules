@@ -12,12 +12,13 @@
 | Name | Version |
 |------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | n/a |
+| <a name="provider_aws.us_east_1"></a> [aws.us\_east\_1](#provider\_aws.us\_east\_1) | n/a |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_api_cert"></a> [api\_cert](#module\_api\_cert) | ../dns-acm-certificate | n/a |
+| <a name="module_domain_certificate"></a> [domain\_certificate](#module\_domain\_certificate) | ../dns-acm-certificate | n/a |
 
 ## Resources
 
@@ -29,12 +30,13 @@
 | [aws_apigatewayv2_stage.stage](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/apigatewayv2_stage) | resource |
 | [aws_cloudwatch_log_group.gateway_logs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_route53_record.alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_acm_certificate.certificate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/acm_certificate) | data source |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_domain"></a> [domain](#input\_domain) | Custom domain for the API (ACM cert, API Gateway domain, Route53 alias). Omit for execute-api URL only. | <pre>object({<br/>    zone_id  = string<br/>    hostname = string<br/>  })</pre> | `null` | no |
+| <a name="input_domain"></a> [domain](#input\_domain) | Custom domain for the API (ACM cert, API Gateway domain, Route53 alias). Omit for execute-api URL only. | <pre>object({<br/>    zone_id  = string<br/>    hostname = string<br/><br/>    certificate = optional(object({<br/>      mode            = string<br/>      lookup_domain   = optional(string)<br/>      lookup_statuses = optional(list(string))<br/>    }))<br/>  })</pre> | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | API Gateway name (also used for the stage and CloudWatch log group path) | `string` | n/a | yes |
 
 ## Outputs
