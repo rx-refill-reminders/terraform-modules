@@ -16,7 +16,7 @@ resource "aws_cognito_user_pool_domain" "default_domain" {
 module "custom_domain_cert" {
   count = var.domain != null ? 1 : 0
 
-  source = "../dns-acm-certificate"
+  source = "git::github.com/rx-refill-reminders/terraform-modules//modules/dns-acm-certificate?ref=dns-acm-certificate%2Fv0&depth=0"
 
   domain_name = var.domain.hostname
   zone_id     = var.domain.zone_id
