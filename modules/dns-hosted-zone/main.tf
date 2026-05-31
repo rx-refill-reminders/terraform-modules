@@ -25,7 +25,7 @@ moved {
 }
 
 module "acm_cert" {
-  source = "../dns-acm-certificate"
+  source = "git::github.com/rx-refill-reminders/terraform-modules//modules/dns-acm-certificate?ref=dns-acm-certificate%2Fv0&depth=0"
 
   domain_name = var.domain
   zone_id     = local.root_zone_id

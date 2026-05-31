@@ -17,7 +17,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_api_cert"></a> [api\_cert](#module\_api\_cert) | ../dns-acm-certificate | n/a |
+| <a name="module_api_cert"></a> [api\_cert](#module\_api\_cert) | git::github.com/rx-refill-reminders/terraform-modules//modules/dns-acm-certificate | dns-acm-certificate%2Fv1&depth=0 |
 
 ## Resources
 
