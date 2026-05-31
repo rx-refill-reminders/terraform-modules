@@ -6,7 +6,7 @@ locals {
 
 # CloudFront Distribution
 resource "aws_cloudfront_distribution" "distribution" {
-  comment = "CloudFront distribution for ${var.bucket_name}"
+  comment = "CloudFront distribution for ${local.bucket_name}"
 
   enabled             = true
   is_ipv6_enabled     = var.enable_ipv6
@@ -16,8 +16,8 @@ resource "aws_cloudfront_distribution" "distribution" {
   # Use the S3 REST API endpoint as origin (not website endpoint)
   # This allows us to use OAC and keep the bucket private
   origin {
-    domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
-    origin_id                = "S3-${var.bucket_name}"
+    domain_name              = aws_s3_bucket.bucket.bucket_regional_domain_name
+    origin_id                = "S3-${local.bucket_name}"
     origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
   }
 
@@ -25,7 +25,7 @@ resource "aws_cloudfront_distribution" "distribution" {
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "S3-${var.bucket_name}"
+    target_origin_id = "S3-${local.bucket_name}"
 
     forwarded_values {
       query_string = false

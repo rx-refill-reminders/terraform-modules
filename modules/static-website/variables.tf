@@ -8,8 +8,8 @@ variable "custom_domain" {
   })
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket"
+variable "bucket_name_prefix" {
+  description = "Name prefix for the S3 bucket"
   type        = string
 }
 

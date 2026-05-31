@@ -1,7 +1,15 @@
-# S3 Bucket for static website hosting
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
+locals {
+  bucket_name = "${var.bucket_name_prefix}-${data.aws_caller_identity.current.account_id}-${data.aws_region.current.region}-an"
+}
+
+# Shared S3 bucket for Lambda deployment packages, namespaced per account and region.
 resource "aws_s3_bucket" "bucket" {
-  bucket = var.bucket_name
-  tags   = module.tags
+  bucket           = local.bucket_name
+  bucket_namespace = "account-regional"
 }
 
 # Note: We don't enable static website hosting when using CloudFront with OAC.
@@ -60,8 +68,8 @@ resource "aws_s3_bucket_acl" "acl" {
 
 # Restrict access to the bucket origin to only CloudFront
 resource "aws_cloudfront_origin_access_control" "oac" {
-  name                              = "${var.bucket_name}-oac"
-  description                       = "OAC for ${var.bucket_name}"
+  name                              = "${local.bucket_name}-oac"
+  description                       = "OAC for ${local.bucket_name}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -83,13 +91,13 @@ data "aws_iam_policy_document" "bucket_policy" {
     ]
 
     resources = [
-      "${aws_s3_bucket.website.arn}/*"
+      "${aws_s3_bucket.bucket.arn}/*"
     ]
 
     condition {
       test     = "StringEquals"
       variable = "AWS:SourceArn"
-      values   = [aws_cloudfront_distribution.website.arn]
+      values   = [aws_cloudfront_distribution.distribution.arn]
     }
   }
 }
@@ -97,9 +105,9 @@ data "aws_iam_policy_document" "bucket_policy" {
 resource "aws_s3_bucket_policy" "bucket_policy" {
   depends_on = [
     aws_s3_bucket_public_access_block.block,
-    aws_cloudfront_distribution.website,
+    aws_cloudfront_distribution.distribution,
   ]
 
-  bucket = aws_s3_bucket.website.id
+  bucket = aws_s3_bucket.bucket.id
   policy = data.aws_iam_policy_document.bucket_policy.json
 }
