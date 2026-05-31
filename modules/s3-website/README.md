@@ -1,4 +1,4 @@
-# static-website
+# s3-website
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
