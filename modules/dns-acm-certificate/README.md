@@ -28,7 +28,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_domain_name"></a> [domain\_name](#input\_domain\_name) | n/a | `string` | n/a | yes |
-| <a name="input_validation"></a> [validation](#input\_validation) | n/a | <pre>object({<br/>    enabled           = true<br/>    validation_domain = optional(string)<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
+| <a name="input_validation"></a> [validation](#input\_validation) | n/a | <pre>object({<br/>    enabled           = bool<br/>    validation_domain = optional(string)<br/>  })</pre> | <pre>{<br/>  "enabled": false<br/>}</pre> | no |
 | <a name="input_zone_id"></a> [zone\_id](#input\_zone\_id) | n/a | `string` | n/a | yes |
 
 ## Outputs
