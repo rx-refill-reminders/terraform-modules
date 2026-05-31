@@ -1,25 +1,48 @@
-module "api_cert" {
-  count = var.domain != null ? 1 : 0
+locals {
+  create_domain = var.domain != null
+
+  create_certificate = var.domain != null && var.domain.certificate != null && var.domain.certificate.mode == "create"
+  lookup_certificate = var.domain != null && var.domain.certificate != null && var.domain.certificate.mode == "lookup"
+}
+
+data "aws_acm_certificate" "certificate" {
+  count = local.lookup_certificate ? 1 : 0
+
+  domain   = var.domain.certificate.lookup_domain
+  statuses = var.domain.certificate.lookup_statuses
+
+  provider = aws.us_east_1
+}
+
+moved {
+  from = module.api_cert
+  to   = module.domain_certificate
+}
+
+module "domain_certificate" {
+  count = local.create_domain ? 1 : 0
 
   source = "../dns-acm-certificate"
 
   domain_name = var.domain.hostname
   zone_id     = var.domain.zone_id
-  validate    = true
+
+  validation = {
+    enabled = true
+  }
 
   providers = {
-    aws.default   = aws
-    aws.us_east_1 = aws.us_east_1
+    aws = aws.us_east_1
   }
 }
 
 resource "aws_apigatewayv2_domain_name" "domain" {
-  count = var.domain != null ? 1 : 0
+  count = local.create_domain ? 1 : 0
 
   domain_name = var.domain.hostname
 
   domain_name_configuration {
-    certificate_arn = module.api_cert[0].certificate_arn
+    certificate_arn = local.create_domain ? module.domain_certificate[0].certificate_arn : data.aws_acm_certificate.certificate[0].arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }
