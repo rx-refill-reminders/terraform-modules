@@ -9,7 +9,7 @@ resource "aws_acm_certificate" "certificate" {
 }
 
 resource "aws_route53_record" "validation_records" {
-  for_each = local.validation.enabled ? {
+  for_each = var.validation.enabled ? {
     for dvo in aws_acm_certificate.certificate.domain_validation_options : dvo.domain_name => {
       name   = dvo.resource_record_name
       record = dvo.resource_record_value
