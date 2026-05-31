@@ -17,7 +17,7 @@
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_custom_domain_cert"></a> [custom\_domain\_cert](#module\_custom\_domain\_cert) | ../dns-acm-certificate | n/a |
+| <a name="module_custom_domain_cert"></a> [custom\_domain\_cert](#module\_custom\_domain\_cert) | git::github.com/rx-refill-reminders/terraform-modules//modules/dns-acm-certificate | dns-acm-certificate%2Fv0&depth=0 |
 
 ## Resources
 

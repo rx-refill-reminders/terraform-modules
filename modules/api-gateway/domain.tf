@@ -1,7 +1,7 @@
 module "api_cert" {
   count = var.domain != null && var.domain.certificate_arn != null ? 1 : 0
 
-  source = "../dns-acm-certificate"
+  source = "git::github.com/rx-refill-reminders/terraform-modules//modules/dns-acm-certificate?ref=dns-acm-certificate%2Fv1&depth=0"
 
   domain_name = var.domain.hostname
   zone_id     = var.domain.zone_id
