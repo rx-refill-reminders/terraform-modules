@@ -13,9 +13,7 @@ No requirements.
 
 ## Modules
 
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_api_cert"></a> [api\_cert](#module\_api\_cert) | ../dns-acm-certificate | n/a |
+No modules.
 
 ## Resources
 
@@ -23,7 +21,7 @@ No requirements.
 |------|------|
 | [aws_cloudfront_distribution.distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) | resource |
 | [aws_cloudfront_origin_access_control.oac](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_origin_access_control) | resource |
-| [aws_route53_record.dns_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_route53_record.custom_domain_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_s3_bucket.bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) | resource |
 | [aws_s3_bucket_acl.acl](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl) | resource |
 | [aws_s3_bucket_ownership_controls.ownership](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_ownership_controls) | resource |
@@ -38,7 +36,7 @@ No requirements.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_bucket_name"></a> [bucket\_name](#input\_bucket\_name) | Name of the S3 bucket | `string` | n/a | yes |
-| <a name="input_custom_domain"></a> [custom\_domain](#input\_custom\_domain) | List of DNS aliases for the website | <pre>list(object({<br/>    route53_zone_id  = string<br/>    route53_hostname = string<br/>  }))</pre> | `[]` | no |
+| <a name="input_custom_domain"></a> [custom\_domain](#input\_custom\_domain) | DNS alias for the website | <pre>object({<br/>    hosted_zone_id  = string<br/>    domain_name     = string<br/>    certificate_arn = string<br/>  })</pre> | `null` | no |
 | <a name="input_custom_error_responses"></a> [custom\_error\_responses](#input\_custom\_error\_responses) | List of custom error responses for the CloudFront distribution | <pre>list(object({<br/>    error_code            = number<br/>    response_code         = number<br/>    response_page_path    = string<br/>    error_caching_min_ttl = optional(number, 300)<br/>  }))</pre> | `[]` | no |
 | <a name="input_default_ttl"></a> [default\_ttl](#input\_default\_ttl) | Default TTL for cached content (in seconds) | `number` | `86400` | no |
 | <a name="input_enable_compression"></a> [enable\_compression](#input\_enable\_compression) | Enable compression for the CloudFront distribution | `bool` | `true` | no |
@@ -50,7 +48,6 @@ No requirements.
 | <a name="input_index_document"></a> [index\_document](#input\_index\_document) | The index document for the website (e.g., index.html) | `string` | `"index.html"` | no |
 | <a name="input_max_ttl"></a> [max\_ttl](#input\_max\_ttl) | Maximum TTL for cached content (in seconds) | `number` | `31536000` | no |
 | <a name="input_min_ttl"></a> [min\_ttl](#input\_min\_ttl) | Minimum TTL for cached content (in seconds) | `number` | `0` | no |
-| <a name="input_minimum_protocol_version"></a> [minimum\_protocol\_version](#input\_minimum\_protocol\_version) | Minimum version of the SSL protocol that you want CloudFront to use for HTTPS connections | `string` | `"TLSv1.2_2021"` | no |
 | <a name="input_price_class"></a> [price\_class](#input\_price\_class) | Price class for CloudFront distribution. Options: PriceClass\_All, PriceClass\_200, PriceClass\_100 | `string` | `"PriceClass_All"` | no |
 | <a name="input_viewer_protocol_policy"></a> [viewer\_protocol\_policy](#input\_viewer\_protocol\_policy) | The protocol that viewers can use to access the files. Options: allow-all, https-only, redirect-to-https | `string` | `"redirect-to-https"` | no |
 
