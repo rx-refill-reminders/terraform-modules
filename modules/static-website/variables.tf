@@ -1,10 +1,11 @@
 variable "custom_domain" {
-  description = "List of DNS aliases for the website"
-  default     = []
-  type = list(object({
-    route53_zone_id  = string
-    route53_hostname = string
-  }))
+  description = "DNS alias for the website"
+  default     = null
+  type = object({
+    hosted_zone_id  = string
+    domain_name     = string
+    certificate_arn = string
+  })
 }
 
 variable "bucket_name" {
@@ -28,12 +29,6 @@ variable "enable_versioning" {
   description = "Enable versioning on the S3 bucket"
   type        = bool
   default     = false
-}
-
-variable "minimum_protocol_version" {
-  description = "Minimum version of the SSL protocol that you want CloudFront to use for HTTPS connections"
-  type        = string
-  default     = "TLSv1.2_2021"
 }
 
 variable "viewer_protocol_policy" {

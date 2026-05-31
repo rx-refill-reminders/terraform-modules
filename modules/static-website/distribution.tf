@@ -1,3 +1,9 @@
+locals {
+  tls_protocol_version = "TLSv1.2_2021"
+
+  custom_domain_enabled = var.custom_domain != null
+}
+
 # CloudFront Distribution
 resource "aws_cloudfront_distribution" "distribution" {
   comment = "CloudFront distribution for ${var.bucket_name}"
@@ -36,13 +42,13 @@ resource "aws_cloudfront_distribution" "distribution" {
   }
 
   # Custom domain and SSL certificate
-  aliases = var.dns_aliases[*].route53_hostname
+  aliases = local.custom_domain_enabled ? [var.custom_domain.domain_name] : []
 
   viewer_certificate {
-    acm_certificate_arn            = var.acm_certificate_arn
-    ssl_support_method             = var.acm_certificate_arn != null ? "sni-only" : null
-    minimum_protocol_version       = var.acm_certificate_arn != null ? var.minimum_protocol_version : null
-    cloudfront_default_certificate = var.acm_certificate_arn == null
+    acm_certificate_arn            = var.custom_domain.certificate_arn
+    ssl_support_method             = local.custom_domain_enabled ? "sni-only" : null
+    minimum_protocol_version       = local.tls_protocol_version
+    cloudfront_default_certificate = !local.custom_domain_enabled
   }
 
   # Custom error responses
@@ -67,31 +73,16 @@ resource "aws_cloudfront_distribution" "distribution" {
 }
 
 # Route53 ALIAS record pointing to CloudFront distribution
-resource "aws_route53_record" "dns_alias" {
-  count = var.route53_zone_id != null && var.route53_record_name != null ? 1 : 0
+resource "aws_route53_record" "custom_domain_alias" {
+  count = local.custom_domain_enabled ? 1 : 0
 
-  zone_id = var.route53_zone_id
-  name    = var.route53_record_name
+  zone_id = var.custom_domain.hosted_zone_id
+  name    = var.custom_domain.domain_name
   type    = "A"
 
   alias {
     name                   = aws_cloudfront_distribution.website.domain_name
     zone_id                = aws_cloudfront_distribution.website.hosted_zone_id
     evaluate_target_health = false
-  }
-}
-
-module "api_cert" {
-  count = var.domain != null ? 1 : 0
-
-  source = "../dns-acm-certificate"
-
-  domain_name = var.domain.hostname
-  zone_id     = var.domain.zone_id
-  validate    = true
-
-  providers = {
-    aws.default   = aws
-    aws.us_east_1 = aws.us_east_1
   }
 }
