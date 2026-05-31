@@ -68,8 +68,6 @@ resource "aws_cloudfront_distribution" "distribution" {
       locations        = var.geo_restriction_locations
     }
   }
-
-  tags = module.tags
 }
 
 # Route53 ALIAS record pointing to CloudFront distribution
