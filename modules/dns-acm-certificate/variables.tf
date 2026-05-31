@@ -8,7 +8,7 @@ variable "zone_id" {
 
 variable "validation" {
   type = object({
-    enabled           = true
+    enabled           = bool
     validation_domain = optional(string)
   })
 
