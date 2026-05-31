@@ -8,6 +8,8 @@ variable "domain" {
   type = object({
     zone_id  = string
     hostname = string
+
+    certificate_arn = optional(string)
   })
   default = null
 }

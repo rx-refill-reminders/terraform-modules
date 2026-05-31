@@ -1,15 +1,17 @@
 module "api_cert" {
-  count = var.domain != null ? 1 : 0
+  count = var.domain != null && var.domain.certificate_arn != null ? 1 : 0
 
   source = "../dns-acm-certificate"
 
   domain_name = var.domain.hostname
   zone_id     = var.domain.zone_id
-  validate    = true
+
+  validation = {
+    enabled = true
+  }
 
   providers = {
-    aws.default   = aws
-    aws.us_east_1 = aws.us_east_1
+    aws = aws.us_east_1
   }
 }
 
@@ -19,7 +21,7 @@ resource "aws_apigatewayv2_domain_name" "domain" {
   domain_name = var.domain.hostname
 
   domain_name_configuration {
-    certificate_arn = module.api_cert[0].certificate_arn
+    certificate_arn = var.domain.certificate_arn != null ? var.domain.certificate_arn : module.api_cert[0].certificate_arn
     endpoint_type   = "REGIONAL"
     security_policy = "TLS_1_2"
   }
