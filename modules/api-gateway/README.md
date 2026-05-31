@@ -34,7 +34,7 @@
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_domain"></a> [domain](#input\_domain) | Custom domain for the API (ACM cert, API Gateway domain, Route53 alias). Omit for execute-api URL only. | <pre>object({<br/>    zone_id  = string<br/>    hostname = string<br/>  })</pre> | `null` | no |
+| <a name="input_domain"></a> [domain](#input\_domain) | Custom domain for the API (ACM cert, API Gateway domain, Route53 alias). Omit for execute-api URL only. | <pre>object({<br/>    zone_id  = string<br/>    hostname = string<br/><br/>    certificate_arn = optional(string)<br/>  })</pre> | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | API Gateway name (also used for the stage and CloudWatch log group path) | `string` | n/a | yes |
 
 ## Outputs
