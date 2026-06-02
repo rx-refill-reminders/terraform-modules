@@ -10,7 +10,7 @@ resource "aws_route53_record" "dns_alias" {
   count = var.domain.mode == "user-hosted" ? 1 : 0
 
   name    = var.domain.user_hosted.domain
-  zone_id = var.domain.user_hotsed.hosted_zone_id
+  zone_id = var.domain.user_hosted.hosted_zone_id
 
   type = "A"
 
