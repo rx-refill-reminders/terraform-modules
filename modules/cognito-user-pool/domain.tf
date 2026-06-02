@@ -1,43 +1,27 @@
-data "aws_region" "current" {}
-
-locals {
-  default_domain_prefix    = var.domain_prefix
-  default_cognito_hostname = "${local.default_domain_prefix}.auth.${data.aws_region.current.region}.amazoncognito.com"
-
-  cognito_hostname = var.domain != null ? var.domain.hostname : local.default_cognito_hostname
-  cognito_url      = "https://${local.cognito_hostname}"
-}
-
-resource "aws_cognito_user_pool_domain" "default_domain" {
-  domain       = local.default_domain_prefix
+resource "aws_cognito_user_pool_domain" "domain" {
   user_pool_id = aws_cognito_user_pool.pool.id
+
+  domain = var.domain.mode == "user-hosted" ? var.domain.user_hosted.domain : var.domain.cognito_hosted.prefix
+
+  certificate_arn = var.domain.mode == "user-hotsed" ? var.domain.user_hosted.certificate_arn : null
 }
 
-module "custom_domain_cert" {
-  count = var.domain != null ? 1 : 0
+resource "aws_route53_record" "dns_alias" {
+  count = var.domain.mode == "user-hosted" ? 1 : 0
 
-  source = "git::github.com/rx-refill-reminders/terraform-modules//modules/dns-acm-certificate?ref=dns-acm-certificate%2Fv0&depth=0"
+  name    = var.domain.user_hosted.domain
+  zone_id = var.domain.user_hosted.hosted_zone_id
 
-  domain_name = var.domain.hostname
-  zone_id     = var.domain.zone_id
-  validate    = true
-
-  providers = {
-    aws.default   = aws
-    aws.us_east_1 = aws.us_east_1
-  }
-}
-
-resource "aws_route53_record" "custom_domain_alias" {
-  count = var.domain != null ? 1 : 0
-
-  name    = var.domain.hostname
-  zone_id = var.domain.zone_id
-  type    = "A"
+  type = "A"
 
   alias {
-    name                   = aws_cognito_user_pool_domain.default_domain.cloudfront_distribution
-    zone_id                = aws_cognito_user_pool_domain.default_domain.cloudfront_distribution_zone_id
+    name                   = aws_cognito_user_pool_domain.domain.cloudfront_distribution
+    zone_id                = aws_cognito_user_pool_domain.domain.cloudfront_distribution_zone_id
     evaluate_target_health = false
   }
+}
+
+locals {
+  cognito_hostname = var.domain.mode == "user-hosted" ? var.domain.user_hosted.domain : "${var.domain.cognito_hosted.prefix}.auth.${aws_cognito_user_pool_domain.domain.region}.amazoncognito.com"
+  cognito_url      = "https://${local.cognito_hostname}"
 }

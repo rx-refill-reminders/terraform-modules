@@ -3,23 +3,56 @@ variable "pool_name" {
   type        = string
 }
 
-variable "domain_prefix" {
-  description = "Domain prefix for Cognito Hosted UI (will be suffixed with -env)"
-  type        = string
-}
-
-# Custom domain for Cognito Hosted UI (auth.<root-domain>). Omit for default Cognito domain prefix.
+# Custom domain for Cognito Hosted UI
 variable "domain" {
   type = object({
-    zone_id  = string
-    hostname = string
+    mode = string
+    cognito_hosted = optional(object({
+      prefix = string
+    }))
+    user_hosted = optional(object({
+      hosted_zone_id  = string
+      domain          = string
+      certificate_arn = string
+    }))
   })
-  default = null
-}
 
-variable "app_client_name" {
-  description = "Base name for app clients"
-  type        = string
+  validation {
+    condition     = contains(["cognito-hosted", "user-hosted"], var.domain.mode)
+    error_message = "domain.mode must be either cognito-hosted or user-hosted."
+  }
+
+  validation {
+    condition = (
+      var.domain.mode != "cognito-hosted"
+      || var.domain.user_hosted == null
+    )
+    error_message = "domain.user_hosted must not be set when domain.mode is cognito-hosted."
+  }
+
+  validation {
+    condition = (
+      var.domain.mode != "user-hosted"
+      || var.domain.cognito_hosted == null
+    )
+    error_message = "domain.cognito_hosted must not be set when domain.mode is user-hosted."
+  }
+
+  validation {
+    condition = (
+      var.domain.mode != "cognito-hosted"
+      || var.domain.cognito_hosted != null
+    )
+    error_message = "domain.cognito_hosted must be set when domain.mode is cognito-hosted."
+  }
+
+  validation {
+    condition = (
+      var.domain.mode != "user-hosted"
+      || var.domain.user_hosted != null
+    )
+    error_message = "domain.user_hosted must be set when domain.mode is user-hosted."
+  }
 }
 
 variable "resource_server_identifier" {
@@ -40,38 +73,17 @@ variable "resource_server_scopes" {
   }))
 }
 
-variable "ios_callback_urls" {
-  description = "Callback URLs for iOS app after authentication"
-  type        = list(string)
-}
+variable "clients" {
+  description = "OAuth clients"
 
-variable "ios_logout_urls" {
-  description = "Logout URLs for iOS app"
-  type        = list(string)
-}
+  type = object({
+    m2m = map(object({}))
 
-variable "enable_web_client" {
-  description = "Whether to create a web app client for user authentication"
-  type        = bool
-  default     = false
-}
-
-variable "web_callback_urls" {
-  description = "Callback URLs for web app after authentication"
-  type        = list(string)
-  default     = []
-}
-
-variable "web_logout_urls" {
-  description = "Logout URLs for web app"
-  type        = list(string)
-  default     = []
-}
-
-variable "enable_service_client" {
-  description = "Whether to create a service client for machine-to-machine auth"
-  type        = bool
-  default     = true
+    apps = map(object({
+      callback_urls = list(string)
+      logout_urls   = list(string)
+    }))
+  })
 }
 
 variable "mfa_configuration" {
