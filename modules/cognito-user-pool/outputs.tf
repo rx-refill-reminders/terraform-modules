@@ -41,7 +41,7 @@ output "m2m_client_secrets" {
   value = {
     for key, secret in aws_secretsmanager_secret.m2m_client_secret : key => {
       name = secret.name
-      arn = secret.arn
+      arn  = secret.arn
     }
   }
 }
