@@ -3,14 +3,14 @@ resource "aws_cognito_user_pool_domain" "domain" {
 
   domain = var.domain.mode == "user-hosted" ? var.domain.user_hosted.domain : var.domain.cognito_hosted.prefix
 
-  certificate_arn = var.domain.mode == "user-hotsed" ? var.domain.user_hosted.certificate_arn : null
+  certificate_arn = var.domain.mode == "user-hosted" ? var.domain.user_hosted.certificate_arn : null
 }
 
 resource "aws_route53_record" "dns_alias" {
-  count = var.domain.mode == "user-hosted" ? 1 : 0
+  count = var.domain.mode == "user-hosted" ? 1 : (var.domain.cognito_hosted.dummy_alias != null ? 1 : 0)
 
-  name    = var.domain.user_hosted.domain
-  zone_id = var.domain.user_hosted.hosted_zone_id
+  name    = try(var.domain.user_hosted.domain, var.domain.cognito_hosted.dummy_alias.domain)
+  zone_id = try(var.domain.user_hosted.hosted_zone_id, var.domain.cognito_hosted.dummy_alias.hosted_zone_id)
 
   type = "A"
 

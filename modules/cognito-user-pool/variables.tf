@@ -9,6 +9,11 @@ variable "domain" {
     mode = string
     cognito_hosted = optional(object({
       prefix = string
+
+      dummy_alias = optional(object({
+        hosted_zone_id = string
+        domain         = string
+      }))
     }))
     user_hosted = optional(object({
       hosted_zone_id  = string
