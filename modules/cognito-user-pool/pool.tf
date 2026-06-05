@@ -1,3 +1,7 @@
+locals {
+  distinct_lambda_trigger_arns = var.lambda_trigger_arns == null ? [] : toset([for arn in distinct(values(var.lambda_trigger_arns)) : arn if arn != null])
+}
+
 # Cognito User Pool - Core identity provider
 resource "aws_cognito_user_pool" "pool" {
   name = var.pool_name
@@ -83,7 +87,7 @@ resource "aws_cognito_user_pool" "pool" {
   }
 
   dynamic "lambda_config" {
-    for_each = var.lambda_trigger_arns != null ? [1] : []
+    for_each = length(local.distinct_lambda_trigger_arns) > 0 ? [1] : []
     content {
       post_confirmation   = try(var.lambda_trigger_arns.post_confirmation, null)
       post_authentication = try(var.lambda_trigger_arns.post_authentication, null)
@@ -152,4 +156,17 @@ resource "aws_cognito_identity_provider" "google" {
     given_name  = "given_name"
     family_name = "family_name"
   }
+}
+
+# Permission for the user pool to invoke the trigger lambdas
+resource "aws_lambda_permission" "allow_invoke" {
+  for_each = local.distinct_lambda_trigger_arns
+
+  statement_id = "AllowCognitoToInvoke"
+
+  function_name = each.value
+  action        = "lambda:InvokeFunction"
+  principal     = "cognito-idp.amazonaws.com"
+
+  source_arn = aws_cognito_user_pool.pool.arn
 }
