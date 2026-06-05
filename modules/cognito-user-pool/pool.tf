@@ -1,5 +1,5 @@
 locals {
-  distinct_lambda_trigger_arns = var.lambda_trigger_arns == null ? [] : toset(distinct(values(var.lambda_trigger_arns)))
+  distinct_lambda_trigger_arns = var.lambda_trigger_arns == null ? [] : toset([for arn in distinct(values(var.lambda_trigger_arns)) : arn if arn != null])
 }
 
 # Cognito User Pool - Core identity provider
