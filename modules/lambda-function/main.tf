@@ -1,3 +1,13 @@
+data "aws_region" "current" {}
+
+locals {
+  default_env_vars = {
+    AWS_REGION = data.aws_region.current.region
+  }
+
+  final_env_vars = merge(local.default_env_vars, var.env_vars)
+}
+
 # Uploads the built deployment zip to the shared code bucket so Lambda can load it from S3.
 resource "aws_s3_object" "code_object" {
   bucket = var.code_bucket_id
@@ -24,7 +34,7 @@ resource "aws_lambda_function" "function" {
   timeout = var.timeout_seconds
 
   environment {
-    variables = var.env_vars
+    variables = local.final_env_vars
   }
 }
 
