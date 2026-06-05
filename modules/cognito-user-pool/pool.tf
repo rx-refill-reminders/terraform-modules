@@ -160,7 +160,7 @@ resource "aws_cognito_identity_provider" "google" {
 
 # Permission for the user pool to invoke the trigger lambdas
 resource "aws_lambda_permission" "allow_invoke" {
-  for_each = var.lambda_trigger_arns == null ? [] : toset(distinct(values(var.lambda_trigger_arns)))
+  for_each = local.distinct_lambda_trigger_arns
 
   statement_id = "AllowCognitoToInvoke"
 
