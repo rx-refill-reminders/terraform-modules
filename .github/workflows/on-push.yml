@@ -27,7 +27,7 @@ concurrency:
 jobs:
 
   release-modules:
-    uses: rx-refill-reminders/pipeline/.github/workflows/deploy-terraform-modules.yml@deploy-terraform-modules/v0
+    uses: slingshot-pipelines/workflows/.github/workflows/release-terraform-modules.yml@release-terraform-modules/v0
     with:
       COMPONENT: modules
     secrets: inherit
